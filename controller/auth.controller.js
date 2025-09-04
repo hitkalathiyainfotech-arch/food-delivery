@@ -3,9 +3,9 @@ import mongoose from "mongoose";
 import UserModel from "../model/user.model.js";
 import bcrypt from "bcryptjs";
 import twilio from 'twilio'
+import jwt from 'jsonwebtoken';
 
-
-
+//twillio config
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 
@@ -16,17 +16,28 @@ class AuthController {
     //salt rounds
     static saltRounds = 10
 
+    //JWT_SECRET define
+    static JWT_SECRET = process.env.JWT_SECRET
     //new Register user Controller [core register]
     static async newUserRegisterController(req, res) {
         try {
             const { name, mobileNo, email, password } = req.body;
 
             // Validate request
-            if (!name || !mobileNo || !email || !password) {
+            if (!name && !mobileNo && !email && !password) {
                 return res.status(400).json({
                     success: false,
                     message: "name, mobileNo, email & password are required!"
                 });
+            }
+
+            //check is Already Register or Not
+            const isExist = await UserModel.find({ email: email });
+            if (isExist) {
+                return res.status(409).json({
+                    success: false,
+                    message: "You'r Already Register Please! Login"
+                })
             }
 
             // Hash password
@@ -78,16 +89,15 @@ class AuthController {
         }
     }
 
-
     //verify mobile otp & verifed : true,
     static async verifyMobileOtpController(req, res) {
-        const COMMON_OTP = "000000"; 
+        const COMMON_OTP = "000000";
 
         try {
             const { mobileNo, otp } = req.body;
 
             // Validate input
-            if (!mobileNo || !otp) {
+            if (!mobileNo && !otp) {
                 return res.status(400).json({
                     success: false,
                     message: "Mobile number & OTP are required!"
@@ -96,10 +106,21 @@ class AuthController {
 
             // Check if user exists
             const user = await UserModel.findOne({ mobileNo });
-            if (!user) {
-                return res.status(400).json({
-                    success: false,
-                    message: "This mobile number is not registered!"
+            if (user) {
+                const payload = {
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role
+                }
+
+                const token = jwt.sign(payload, AuthController.JWT_SECRET, { expiresIn: "7d" });
+
+                return res.status(200).json({
+                    success: true,
+                    message: "User already exists, login successful",
+                    user: user,
+                    token: token
                 });
             }
 
@@ -156,7 +177,122 @@ class AuthController {
         }
     }
 
+    // social register controller register & login with (Google/facebook)
+    static async newSocialRegisterLoginController(req, res) {
+        try {
+            const { uid, name, email, avatar } = req.body;
 
+            if (!uid && !name && !email && !avatar) {
+                return res.status(400).json({
+                    success: false,
+                    message: "uid, name, email & avatar are required!"
+                });
+            }
+
+            const existingUser = await UserModel.findOne({ email });
+            if (existingUser) {
+                const payload = {
+                    id: existingUser._id,
+                    name: existingUser.name,
+                    email: existingUser.email,
+                    role: existingUser.role
+                }
+
+                const token = jwt.sign(payload, AuthController.JWT_SECRET, { expiresIn: "7d" });
+
+                return res.status(200).json({
+                    success: true,
+                    message: "User already exists, login successful",
+                    user: existingUser,
+                    token: token
+                });
+            }
+
+            // Create new social user
+            const newUser = await UserModel.create({
+                uid,
+                name,
+                email,
+                avatar,
+                verified: true
+            });
+
+            return res.status(201).json({
+                success: true,
+                message: "New social login & registration successful",
+                user: newUser
+            });
+
+        } catch (error) {
+            console.error("Social Register Error:", error.message);
+            return res.status(500).json({
+                success: false,
+                message: "Error while registering social user",
+                error: error.message
+            });
+        }
+    }
+
+    //login (core) using email & password
+    static async userLoginController(req, res) {
+        try {
+            const { email, password } = req.body;
+
+            if (!email || !password) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Email and password are required!"
+                });
+            }
+
+            const user = await UserModel.findOne({ email });
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: "You are not registered, please sign up first 🙏"
+                });
+            }
+
+            const isPasswordValid = await bcrypt.compare(password, user.password);
+            if (!isPasswordValid) {
+                return res.status(401).json({
+                    success: false,
+                    message: "Invalid password!"
+                });
+            }
+
+            const payload = {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role || "user"
+            };
+
+            const token = jwt.sign(payload, AuthController.JWT_SECRET, { expiresIn: "7d" });
+
+            return res.status(200).json({
+                success: true,
+                message: "Login successfull",
+                user: {
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role
+                },
+                token
+            });
+
+        } catch (error) {
+            console.error("Login Error:", error.message);
+            return res.status(500).json({
+                success: false,
+                message: "Error while logging in",
+                error: error.message
+            });
+        }
+    }
+    
+    
 }
 
 export default AuthController
