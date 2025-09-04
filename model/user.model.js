@@ -13,6 +13,7 @@ const UserSchema = new mongoose.Schema({
     uid: { type: String, default: null },
     avatar: { type: String, default: null },
     otp: { type: Number },
+    resetOtpExpiry: { type: Date, default: null },
     verified: { type: Boolean, default: false }
 })
 
