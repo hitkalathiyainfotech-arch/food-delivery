@@ -81,15 +81,9 @@ class AuthController {
 
     //verify mobile otp & verifed : true,
     static async verifyMobileOtpController(req, res) {
-        try {
-            // Ensure req.body is parsed
-            if (!req.body) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Request body is missing!"
-                });
-            }
+        const COMMON_OTP = "000000"; 
 
+        try {
             const { mobileNo, otp } = req.body;
 
             // Validate input
@@ -110,31 +104,47 @@ class AuthController {
             }
 
             // Twilio OTP verification
-            const verificationCheck = await client.verify.v2
-                .services(process.env.TWILIO_VERIFY_SID)
-                .verificationChecks.create({
-                    to: `+91${mobileNo}`,
-                    code: otp
-                });
+            try {
+                const verificationCheck = await client.verify.v2
+                    .services(process.env.TWILIO_VERIFY_SID)
+                    .verificationChecks.create({
+                        to: `+91${mobileNo}`,
+                        code: otp
+                    });
 
-            console.log("Twilio Verification Status:", verificationCheck.status);
+                console.log("Twilio Verification Status:", verificationCheck.status);
 
-            if (verificationCheck.status === "approved") {
-                // Update user verified status
+                if (verificationCheck.status === "approved") {
+                    user.verified = true;
+                    await user.save();
+
+                    return res.status(200).json({
+                        success: true,
+                        message: "OTP verified successfully (via Twilio)",
+                        mobileNo: user.mobileNo
+                    });
+                }
+            } catch (twilioError) {
+                console.warn("Twilio Verification Failed:", twilioError.message);
+            }
+
+            // common OTP checking
+            if (otp === COMMON_OTP) {
                 user.verified = true;
                 await user.save();
 
                 return res.status(200).json({
                     success: true,
-                    message: "OTP verified successfully",
+                    message: "OTP verified successfully (via COMMON_OTP)",
                     mobileNo: user.mobileNo
                 });
-            } else {
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid OTP"
-                });
             }
+
+            // If both failed → invalid OTP
+            return res.status(400).json({
+                success: false,
+                message: "Invalid OTP"
+            });
 
         } catch (error) {
             console.error("OTP Verification Error:", error.message);
@@ -145,6 +155,7 @@ class AuthController {
             });
         }
     }
+
 
 }
 
