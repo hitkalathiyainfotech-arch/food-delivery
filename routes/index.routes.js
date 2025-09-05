@@ -1,7 +1,7 @@
 import express from 'express';
 import { AuthController } from '../controller/auth.controller.js';
-import { newSellerController, verifySellerMobileOtpController, sellerLoginController, sellerForgetPasswordController, sellerVerifyForgetOtpController, sellerPasswordResetController, sellerGstVerifyAndInsertController } from '../controller/seller.controller.js';
-import { sellerAuth } from '../middleware/auth.middleware.js';
+import { CategoryController } from '../controller/category.controller.js';
+import { isAdmin, isSeller, UserAuth } from '../middleware/auth.middleware.js';
 
 const indexRouter = express.Router();
 
@@ -27,6 +27,13 @@ indexRouter.post("/seller/login", sellerLoginController)
 indexRouter.post("/seller/forget/password", sellerForgetPasswordController);
 indexRouter.post("/seller/verify/forget/password", sellerVerifyForgetOtpController)
 indexRouter.post("/seller/reset/password", sellerPasswordResetController);
+// Category 
+indexRouter.post("/createCategory", UserAuth, isAdmin, CategoryController.createCategory)
+indexRouter.get("/getAllCategory", UserAuth, CategoryController.getAllCategory)
+indexRouter.get("/getCategoryById", UserAuth, CategoryController.getCategoryById)
+indexRouter.put("/updateCategory", UserAuth, isAdmin, isSeller, CategoryController.updateCategory)
+indexRouter.put("/deleteCategory", UserAuth, isAdmin, CategoryController.deleteCategory)
+
 
 
 //seller.kyc.router.js

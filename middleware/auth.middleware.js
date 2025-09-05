@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import registerModel from "../model/user.model.js";
 import { sendErrorResponse, sendForbiddenResponse, sendUnauthorizedResponse, sendNotFoundResponse } from '../utils/Response.utils.js';
 import { config } from 'dotenv'; config();
 
