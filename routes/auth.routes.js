@@ -19,4 +19,6 @@ router.post("/verify/forget/password", AuthController.verifyForgetOtpController)
 router.post("/reset/password", AuthController.resetPasswordController);
 
 
+//seller.auth.js
+
 export default router

@@ -22,7 +22,7 @@ export class AuthController {
 
     //OTP MAp
     static otpMap = new Map()
-
+    
     //new Register user Controller [core register]
     static async newUserRegisterController(req, res) {
         try {
