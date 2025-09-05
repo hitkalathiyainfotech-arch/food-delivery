@@ -16,6 +16,7 @@ router.post("/new/social/user", AuthController.newSocialRegisterLoginController)
 router.post("/login", AuthController.userLoginController);
 router.post("/forget/password", AuthController.sendForgotMailOtpController);
 router.post("/verify/forget/password", AuthController.verifyForgetOtpController)
-router.post("/reset/password", AuthController.resetPasswordController)
+router.post("/reset/password", AuthController.resetPasswordController);
+
 
 export default router
