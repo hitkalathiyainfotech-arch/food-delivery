@@ -14,13 +14,14 @@ export const sendSuccessResponse = (res, message, result = []) => {
     });
 };
 
-export const sendErrorResponse = (res, statusCode, message) => {
+export const sendErrorResponse = (res, statusCode = 500, message = "Server error", error = null) => {
     return res.status(statusCode).json({
         success: false,
         message,
-        result: []
+        error: error ? error.message || error : undefined
     });
 };
+
 
 export const sendCreatedResponse = (res, message, result = []) => {
     return res.status(201).json({

@@ -6,7 +6,7 @@ import { config } from 'dotenv'; config();
 const GST_API_HOST = "india-gstin-validator.p.rapidapi.com";
 const GST_API_KEY = process.env.RAPIDAPI_KEY || "f3db12d99dmsh0a5a293a042f20cp10c76djsnd707e270b5f0";
 
-async function validateGSTIN(gstin) {
+export default async function validateGSTIN(gstin) {
     try {
         const response = await axios.get(`https://${GST_API_HOST}/validate?gstin=${String(gstin).toUpperCase()}`, {
             headers: {
@@ -28,7 +28,7 @@ async function validateGSTIN(gstin) {
 
 
 
-// smaple =? response 
+// smaple =? response
 // {
 //   "gstin": "24AADCK1665M1ZD",
 //   "valid": true,
@@ -39,4 +39,3 @@ async function validateGSTIN(gstin) {
 // meet
 // 24PUSPK4787H1ZL
 
-module.exports = validateGSTIN;
