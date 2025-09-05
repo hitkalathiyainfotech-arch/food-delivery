@@ -47,6 +47,7 @@ export const createCategory = async (req, res) => {
         if (req.files?.image?.[0]) return req.files.image[0]; // fallback if you posted as "image"
         return null;
     };
+    
 
     const uploaded = pickUploaded();
 
