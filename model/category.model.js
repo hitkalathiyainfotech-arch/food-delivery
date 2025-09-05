@@ -9,7 +9,7 @@ const categorySchema = mongoose.Schema({
         type: String,
         default: null
     },
-    classCategory_image_key: {
+    category_image_key: {
         type: String,
         default: null
     }

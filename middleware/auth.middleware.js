@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import registerModel from "../models/registerModel.js";
+import registerModel from "../model/user.model.js";
 import { sendErrorResponse, sendForbiddenResponse, sendUnauthorizedResponse, sendNotFoundResponse } from '../utils/Response.utils.js';
 
 export const UserAuth = async (req, res, next) => {
@@ -60,3 +60,17 @@ export const isUser = async (req, res, next) => {
         return sendErrorResponse(res, 500, error.message);
     }
 };
+
+export const isSeller = async (req, res, next) => {
+    try {
+        if (!req.user) {
+            return sendUnauthorizedResponse(res, "Authentication required");
+        }
+        if (!req.user.isSeller) {
+            return sendForbiddenResponse(res, "Access denied. Seller privileges required.");
+        }
+        next();
+    } catch (error) {
+        return sendErrorResponse(res, 500, error.message);
+    }
+}
