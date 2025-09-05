@@ -13,7 +13,7 @@ const authToken = process.env.TWILIO_AUTH_TOKEN;
 
 const client = twilio(accountSid, authToken);
 
-class AuthController {
+export class AuthController {
     //salt rounds
     static saltRounds = 10
 
@@ -501,4 +501,3 @@ class AuthController {
     }
 }
 
-export default AuthController
