@@ -26,6 +26,6 @@ const sellerSchema = new mongoose.Schema({
     isSellerAgreementAccept: { type: Boolean, default: false }
 });
 
-const SellerModel = mongoose.model("seller", sellerSchema);
+const sellerModel = mongoose.model("seller", sellerSchema);
 
-export default SellerModel
+export default sellerModel

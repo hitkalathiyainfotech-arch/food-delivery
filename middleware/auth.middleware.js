@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
-import registerModel from "../models/registerModel.js";
 import { sendErrorResponse, sendForbiddenResponse, sendUnauthorizedResponse, sendNotFoundResponse } from '../utils/Response.utils.js';
+import { config } from 'dotenv'; config();
 
 export const UserAuth = async (req, res, next) => {
     try {
@@ -60,3 +60,25 @@ export const isUser = async (req, res, next) => {
         return sendErrorResponse(res, 500, error.message);
     }
 };
+
+export const sellerAuth = (req, res, next) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader?.startsWith("Bearer ")) {
+            return res.status(401).json({ success: false, message: "No token provided" });
+        }
+
+        const token = authHeader.split(" ")[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        if (!decoded.isSeller) {
+            return res.status(403).json({ success: false, message: "Seller access required" });
+        }
+
+        req.user = decoded; // attach full decoded payload
+        next();
+    } catch (error) {
+        return res.status(401).json({ success: false, message: "Invalid or expired token" });
+    }
+};
+
