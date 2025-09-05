@@ -4,7 +4,7 @@ import { config } from 'dotenv'; config();
 import logger from 'morgan';
 import { connectDB } from './DB/connectdb.js';
 import mongoose from 'mongoose';
-import AuthRoute from './routes/auth.routes.js';
+import IndexRoute from './routes/index.routes.js';
 
 
 //connect DB
@@ -48,7 +48,7 @@ app.get("/health", async (req, res) => {
 });
 
 //apis
-app.use("/api", AuthRoute)
+app.use("/api", IndexRoute)
 
 //server listing
 app.listen(PORT, () => {
